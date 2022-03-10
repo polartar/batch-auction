@@ -26,6 +26,7 @@
     "@chainlink/contracts": "^0.2.2",
     "@divergencetech/ethier": "^0.10.0",
     "@openzeppelin/contracts-upgradeable": "^4.5.2",
+    "@openzeppelin/hardhat-upgrades": "^1.16.0",
     "eth-crypto": "^2.0.0",
     "web3": "^1.5.3",
     "web3-utils": "^1.5.3"

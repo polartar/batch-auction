@@ -1,6 +1,6 @@
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.12;
+pragma solidity 0.8.10;
 
 import "./ERC721AUpgradeable.sol";
 import "./LinearDutchAuctionUpgradeable.sol";
@@ -15,9 +15,9 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     using Strings for uint256;
     using ECDSA for bytes32;
 
-    string public prefix = "Leveling Up Heroes Epic Base Verification:";
-    string public prefixDiscounted = "Leveling Up Heroes Epic Discounted Verification:";
-    string private baseTokenURI = '';
+    string public prefix;
+    string public prefixDiscounted;
+    string private baseTokenURI;
 
     mapping(address => uint256) private _whitelistClaimed;
     mapping(address => uint256) private _publicListClaimed;
@@ -68,6 +68,9 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
         reservedMinted = 0;
         discountedPrice = _discountedPrice;
         _splitter = new PaymentSplitter(payees, shares);
+
+        prefix = "Leveling Up Heroes Epic Base Verification:";
+        prefixDiscounted = "Leveling Up Heroes Epic Discounted Verification:";
     }
    
     function _authorizeUpgrade(address newImplementation) internal override { }

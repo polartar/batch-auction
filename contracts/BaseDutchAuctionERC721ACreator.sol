@@ -1,6 +1,6 @@
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.12;
+pragma solidity 0.8.10;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
@@ -9,7 +9,7 @@ import '@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
-import './BaseDutchAuctionERC721A.sol';
+import './BaseDutchAuctionERC721AUpgradable.sol';
 
 contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     using CountersUpgradeable for CountersUpgradeable.Counter;
@@ -36,7 +36,7 @@ contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, Ownab
         admin = msg.sender;
 
         // set up beacon with msg.sender as the owner
-        UpgradeableBeacon _beacon = new UpgradeableBeacon(address(new BaseDutchAuctionERC721A()));
+        UpgradeableBeacon _beacon = new UpgradeableBeacon(address(new BaseDutchAuctionERC721AUpgradable()));
         _beacon.transferOwnership(msg.sender);
         beaconAddress = address(_beacon);
     }
@@ -55,14 +55,14 @@ contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, Ownab
         BeaconProxy proxy = new BeaconProxy(
             beaconAddress,
             abi.encodeWithSelector(
-                Artist(address(0)).initialize.selector,
+                BaseDutchAuctionERC721AUpgradable(address(0)).initialize.selector,
                 payees,
                 shares,
                 name,
                 symbol,
                 _whitelistMaxMint,
                 _publicListMaxMint,
-                _nonreservedMax,
+                _nonReservedMax,
                 _reservedMax,
                 _discountedPrice
             )
@@ -71,7 +71,7 @@ contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, Ownab
         // add to registry
         dutchContracts.push(address(proxy));
 
-        emit CreatedAuction(dutchContracts.length, _name, _symbol, address(proxy));
+        emit CreatedAuction(dutchContracts.length, name, symbol, address(proxy));
 
         return address(proxy);
     }
