@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-
+import "hardhat/console.sol";
 contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
     using Strings for uint256;
     using ECDSA for bytes32;
@@ -73,7 +73,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
         prefixDiscounted = "Leveling Up Heroes Epic Discounted Verification:";
     }
    
-    function _authorizeUpgrade(address newImplementation) internal override { }
+    function _authorizeUpgrade(address newImplementation) internal override onlyOwner{ }
     
     function release(address payable account) external {
         _splitter.release(account);
@@ -84,7 +84,8 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     }
 
     function _verify(bytes32 hash, bytes memory signature) internal view returns (bool) {
-        return (_recover(hash, signature) == owner());
+        bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+        return (_recover(signedHash, signature) == owner());
     }
 
     function _recover(bytes32 hash, bytes memory signature) internal pure returns (address) {

@@ -12,9 +12,10 @@ function getHash(address, data) {
   return messageHashBinary
 }
 
-describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
-  let baseDEUFactory;
+describe("Test BaseDutchAuctionERC721ACreator contract", function () {
+  let baseDEUCreatorFactory;
 
+  let baseDEUCreator;
   let baseDEU;
   let accounts;
   let owner, other, other2, jon, ronald, eric;
@@ -48,35 +49,36 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
   before(async() => {
     accounts = await ethers.getSigners();
     [owner, other, other2, jon, ronald, eric] = accounts;//.map(account => account.address);
-    baseDEUFactory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable");
+    baseDEUCreatorFactory = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator");
  })
 
   beforeEach(async function () {
-    baseDEU = await upgrades.deployProxy(
-      baseDEUFactory,
-      [
-        [jon.address, ronald.address, eric.address],
-        [75, 15, 10],
-        "BaseDutchAuctionTest",
-        "BDAT",
-        ALLOW_LIST_MAX_MINT,
-        0,
-        TOTAL_SALE_SUPPLY,
-        TOTAL_RESERVED_SUPPLY,
-        PRICE_DISCOUNTED,
-      ]
-    );
+    baseDEUCreator = await upgrades.deployProxy(baseDEUCreatorFactory, []);
 
-    await baseDEU.deployed();
+    await baseDEUCreator.deployed();
+
+    baseDEU = await baseDEUCreator.createAuction(
+      [jon.address, ronald.address, eric.address],
+      [75, 15, 10],
+      "BaseDutchAuctionTest",
+      "BDAT",
+      ALLOW_LIST_MAX_MINT,
+      0,
+      TOTAL_SALE_SUPPLY,
+      TOTAL_RESERVED_SUPPLY,
+      PRICE_DISCOUNTED,
+    )
   })
 
   it('should only let admin upgrade', async () => {
-    let v2 = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable2", accounts[1]);
-    await expect(upgrades.upgradeProxy(baseDEU.address, v2)).to.be.reverted;
+    // await offerContract.grantRole(await offerContract.UPGRADER_ROLE(), accounts[1].address);
+
+    // let v2 = await ethers.getContractFactory("Offer2Contract", accounts[2]);
+    // await expect(upgrades.upgradeProxy(offerContract.address, v2)).to.be.reverted;
     
-    v2 = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable2", accounts[0]);
-    const upgrade = await upgrades.upgradeProxy(baseDEU.address, v2);
-    await expect(await upgrade.updatedFunction()).to.eq("v2");
+    // v2 = await ethers.getContractFactory("Offer2Contract", accounts[1]);
+    // const upgrade = await upgrades.upgradeProxy(offerContract.address, v2);
+    // await expect(await upgrade.name()).to.eq("v2");
   })
   
   it("only owner can mint reserved nfts and mints up to reserved limit", async function () {
