@@ -12,10 +12,12 @@ import "hardhat/console.sol";
 
 contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
     address public beaconAddress;
-
+    address dutchAuction;
+    event CreateAuction(address _contract, string _name, string _symbol);
     /// Initializes factory
     function initialize() public initializer {
         __Ownable_init_unchained();
+        __UUPSUpgradeable_init();
 
         // set up beacon with msg.sender as the owner
         UpgradeableBeacon _beacon = new UpgradeableBeacon(address(new BaseDutchAuctionERC721AUpgradable()));
@@ -33,12 +35,11 @@ contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
         uint256 _nonReservedMax,
         uint256 _reservedMax,
         uint256 _discountedPrice
-    ) public onlyOwner returns (address) {
+    ) public onlyOwner {
         BeaconProxy proxy = new BeaconProxy(
             beaconAddress,
             abi.encodeWithSelector(
                 BaseDutchAuctionERC721AUpgradable(address(0)).initialize.selector,
-                msg.sender,
                 payees,
                 shares,
                 name,
@@ -51,7 +52,8 @@ contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
             )
         );
 
-        return address(proxy);
+        emit CreateAuction(address(proxy), name, symbol);
+        // return address(proxy);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}

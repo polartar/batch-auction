@@ -34,7 +34,6 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     PaymentSplitter private _splitter;
 
     function initialize(
-        address _owner,
         address[] memory payees, 
         uint256[] memory shares,
         string memory name,
@@ -59,7 +58,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
             .5 ether
         );
         __ERC721A_init(name, symbol);
-        transferOwnership(_owner);
+        transferOwnership(tx.origin);
 
         whitelistMaxMint = _whitelistMaxMint;
         publicListMaxMint = _publicListMaxMint;
