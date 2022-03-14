@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-
+import "hardhat/console.sol";
 contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
     using Strings for uint256;
     using ECDSA for bytes32;
@@ -118,7 +118,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     
     function mintWhitelist(bytes32 hash, bytes memory signature, uint256 numberOfTokens) external payable {
         require(_verify(hash, signature), "This hash's signature is invalid.");
-        require(_hash(prefix, msg.sender) == hash, "The address hash does not match the signed hash.");
+        require(_hash(prefix, msg.sender) == hash, "Not signer of the hash");
         require(_whitelistClaimed[msg.sender] + numberOfTokens <= whitelistMaxMint, 'You cannot mint this many.');
 
         _whitelistClaimed[msg.sender] += numberOfTokens;
@@ -135,17 +135,10 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
         if (msg.value > price) {
             address payable reimburse = payable(_msgSender());
             uint256 refund = msg.value - price;
-
-            // Using Address.sendValue() here would mask the revertMsg upon
-            // reentrancy, but we want to expose it to allow for more precise
-            // testing. This otherwise uses the exact same pattern as
-            // Address.sendValue().
             (bool success, bytes memory returnData) = reimburse.call{
                 value: refund
             }("");
-            // Although `returnData` will have a spurious prefix, all we really
-            // care about is that it contains the ReentrancyGuard reversion
-            // message so we can check in the tests.
+
             require(success, string(returnData));
         }
     }
@@ -168,8 +161,8 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     }
 
     function mintWhitelistDiscounted(bytes32 hash, bytes memory signature, uint256 numberOfTokens) external payable {
-        require(_verify(hash, signature), "This hash's signature is invalid.");
-        require(_hash(prefixDiscounted, msg.sender) == hash, "The address hash does not match the signed hash.");
+        require(_verify(hash, signature), "Invalid signaure");
+        require(_hash(prefixDiscounted, msg.sender) == hash, "Not signer of the hash");
         require(_whitelistClaimed[msg.sender] + numberOfTokens <= whitelistMaxMint, 'You cannot mint this many.');
         require(discountedPrice == msg.value, "Invalid amount.");
 

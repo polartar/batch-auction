@@ -280,7 +280,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("The address hash does not match the signed hash.");
+    ).to.be.revertedWith("Not signer of the hash");
   });
   
   it("cannot replay attack hashes", async function () {
@@ -301,7 +301,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("The address hash does not match the signed hash.");
+    ).to.be.revertedWith("Not signer of the hash");
   
     let newHash = getHash(other.address, "Public Sale Verification:");
     let newOwnerSignature = await owner.signMessage(newHash);
@@ -517,7 +517,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE_DISCOUNTED),
         from: other.address,
       })
-    ).to.be.revertedWith("The address hash does not match the signed hash.");
+    ).to.be.revertedWith("Not signer of the hash");
   });
   
   it("payment splitter releases nothing in the beginning", async function () {

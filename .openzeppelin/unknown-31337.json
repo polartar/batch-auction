@@ -453,14 +453,14 @@
     },
     {
       "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-      "txHash": "0xcd5c0b9bc4bc8ccb315c0443d5665434a6282ef44294749d97cadf4608f5e992",
+      "txHash": "0x3a23d78860ea896a03d172c23da5891286b0e8c6358d5b004cf72560060e59a8",
       "kind": "uups"
     }
   ],
   "impls": {
-    "d1906bfa33996a66c6544f08c4820aa34e812464b1318530b7b37aff4cffc92c": {
+    "38deffe625f8fa1ddfb6dbe9f27e5e3139f94e10d3af4a76602d4f8bff17fcb3": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0x4c3d09c61895dd7559c5a57101b43a890be07d80f80ee2cac2bfbd0d609e1cb6",
+      "txHash": "0xcce2574e47f6fe1ed559abecce87464eaf3c509a173c5b7994c3e84c08fda198",
       "layout": {
         "storage": [
           {
@@ -525,15 +525,7 @@
             "slot": "201",
             "type": "t_address",
             "contract": "BaseDutchAuctionERC721ACreator",
-            "src": "contracts\\BaseDutchAuctionERC721ACreator.sol:14"
-          },
-          {
-            "label": "dutchAuction",
-            "offset": 0,
-            "slot": "202",
-            "type": "t_address",
-            "contract": "BaseDutchAuctionERC721ACreator",
-            "src": "contracts\\BaseDutchAuctionERC721ACreator.sol:15"
+            "src": "contracts\\BaseDutchAuctionERC721ACreator.sol:13"
           }
         ],
         "types": {
@@ -555,9 +547,9 @@
         }
       }
     },
-    "8027c0109e638026cce934bc7034888a2ffcddcef26786da27b550ea9dade477": {
+    "b5cba12957f548770df96000ce0ef44eeb6682a5dd608953e1c077e537b78eaa": {
       "address": "0x8464135c8F25Da09e49BC8782676a84730C318bC",
-      "txHash": "0x2d840226b9d954791d115f9a45b36fe5fc8d0161f0c67e0dd3663d2264cc7bd9",
+      "txHash": "0x72bbbe52fb3f6fa9ed7872e95863b9a9d306ea29240b1050c2089a9d546862f5",
       "layout": {
         "storage": [
           {
@@ -622,15 +614,7 @@
             "slot": "201",
             "type": "t_address",
             "contract": "BaseDutchAuctionERC721ACreator",
-            "src": "contracts\\BaseDutchAuctionERC721ACreator.sol:14"
-          },
-          {
-            "label": "dutchAuction",
-            "offset": 0,
-            "slot": "202",
-            "type": "t_address",
-            "contract": "BaseDutchAuctionERC721ACreator",
-            "src": "contracts\\BaseDutchAuctionERC721ACreator.sol:15"
+            "src": "contracts\\BaseDutchAuctionERC721ACreator.sol:13"
           }
         ],
         "types": {

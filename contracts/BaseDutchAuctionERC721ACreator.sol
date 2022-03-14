@@ -8,11 +8,10 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
 import './BaseDutchAuctionERC721AUpgradable.sol';
-import "hardhat/console.sol";
 
 contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
     address public beaconAddress;
-    address dutchAuction;
+
     event CreateAuction(address _contract, string _name, string _symbol);
     /// Initializes factory
     function initialize() public initializer {
@@ -53,7 +52,6 @@ contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
         );
 
         emit CreateAuction(address(proxy), name, symbol);
-        // return address(proxy);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
