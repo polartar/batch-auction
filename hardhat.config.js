@@ -23,7 +23,9 @@ const PRIVATE_KEY = KEY_FILE.PRIVATE_KEY;
 module.exports = {
   defaultNetwork: "hardhat",
   networks: {
-    hardhat: {},
+    hardhat: {
+      allowUnlimitedContractSize: true
+    },
     matic: {
       url: "https://rpc-mumbai.maticvigil.com",
       accounts: [PRIVATE_KEY],
@@ -31,6 +33,7 @@ module.exports = {
     rinkeby: {
       url: `https://eth-rinkeby.alchemyapi.io/v2/j0ktCyFHlKmPB56gs_d_cQG1IdDioY8x`,
       accounts: [PRIVATE_KEY],
+      allowUnlimitedContractSize: true
     },
     mainnet: {
       url: "https://eth-mainnet.alchemyapi.io/v2/UtLByqa2uZJ7FW-uSXCvu6W4HvFOTDZc",
@@ -40,16 +43,23 @@ module.exports = {
       url: "https://eth-goerli.alchemyapi.io/v2/fJulcG1ec0co-m6Vk0IVA7L8-fA7OAi5",
       accounts: [PRIVATE_KEY],
     },
+    cronos_testnet : {
+      url : "https://cronos-testnet-3.crypto.org:8545",
+      chainId : 338,
+      gasPrice: 5000000000000,
+      accounts: [PRIVATE_KEY],
+      allowUnlimitedContractSize: true
+    }
   },
   etherscan: {
     apiKey: "K6NF4RQ9MP3F3V7ZVBGCET857X3RDJ1VDS",
   },
   solidity: {
-    version: "0.8.10",
+    version: "0.8.12",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1000,
+        runs: 100,
       },
     },
   },

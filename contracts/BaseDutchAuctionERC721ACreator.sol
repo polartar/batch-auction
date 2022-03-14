@@ -1,39 +1,21 @@
+// SPDX-License-Identifier: UNLICENSED
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.12;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol';
-import '@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
 import './BaseDutchAuctionERC721AUpgradable.sol';
+import "hardhat/console.sol";
 
-contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, OwnableUpgradeable {
-    using CountersUpgradeable for CountersUpgradeable.Counter;
-    using ECDSAUpgradeable for bytes32;
-
-    // ============ Storage ============
-    address public admin;
+contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
     address public beaconAddress;
-    // registry of created contracts
-    address[] public dutchContracts;
-
-    // ============ Events ============
-
-    /// Emitted when an Artist is created
-    event CreatedAuction(uint256 auctionIndex, string name, string symbol, address indexed auctionAddress);
-
-    // ============ Functions ============
 
     /// Initializes factory
     function initialize() public initializer {
         __Ownable_init_unchained();
-
-        // set admin for artist deployment authorization
-        admin = msg.sender;
 
         // set up beacon with msg.sender as the owner
         UpgradeableBeacon _beacon = new UpgradeableBeacon(address(new BaseDutchAuctionERC721AUpgradable()));
@@ -56,6 +38,7 @@ contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, Ownab
             beaconAddress,
             abi.encodeWithSelector(
                 BaseDutchAuctionERC721AUpgradable(address(0)).initialize.selector,
+                msg.sender,
                 payees,
                 shares,
                 name,
@@ -67,11 +50,6 @@ contract BaseDutchAuctionERC721ACreator is Initializable, UUPSUpgradeable, Ownab
                 _discountedPrice
             )
         );
-
-        // add to registry
-        dutchContracts.push(address(proxy));
-
-        emit CreatedAuction(dutchContracts.length, name, symbol, address(proxy));
 
         return address(proxy);
     }

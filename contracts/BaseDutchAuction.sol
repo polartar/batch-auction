@@ -1,6 +1,6 @@
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.12;
 
 import "./ERC721Sequential.sol";
 import "./LinearDutchAuction.sol";

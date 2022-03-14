@@ -1,16 +1,16 @@
+// SPDX-License-Identifier: UNLICENSED
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.10;
+pragma solidity 0.8.12;
 
 import "./ERC721AUpgradeable.sol";
 import "./LinearDutchAuctionUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "hardhat/console.sol";
+
 contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
     using Strings for uint256;
     using ECDSA for bytes32;
@@ -34,6 +34,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     PaymentSplitter private _splitter;
 
     function initialize(
+        address _owner,
         address[] memory payees, 
         uint256[] memory shares,
         string memory name,
@@ -58,6 +59,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
             .5 ether
         );
         __ERC721A_init(name, symbol);
+        transferOwnership(_owner);
 
         whitelistMaxMint = _whitelistMaxMint;
         publicListMaxMint = _publicListMaxMint;
@@ -162,18 +164,8 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
             "Sold out."
         );
 
-        // if (quantity < maxBatchSize) {
-            _safeMint(msg.sender, quantity);
-        // } else {
-        //     require(
-        //         quantity % maxBatchSize == 0,
-        //         "Can only mint a multiple of the maxBatchSize."
-        //     );
-        //     uint256 numChunks = quantity / maxBatchSize;
-        //     for (uint256 i = 0; i < numChunks; i++) {
-        //         _safeMint(msg.sender, maxBatchSize);
-        //     }
-        // }
+        _safeMint(msg.sender, quantity);
+       
     }
 
     function mintWhitelistDiscounted(bytes32 hash, bytes memory signature, uint256 numberOfTokens) external payable {
