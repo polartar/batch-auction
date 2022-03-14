@@ -96,18 +96,16 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   })
 
   it('should only let admin upgrade', async () => {
-    // await offerContract.grantRole(await offerContract.UPGRADER_ROLE(), accounts[1].address);
-
-    // let v2 = await ethers.getContractFactory("Offer2Contract", accounts[2]);
-    // await expect(upgrades.upgradeProxy(offerContract.address, v2)).to.be.reverted;
+    let v2 = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator2", other);
+    await expect(upgrades.upgradeProxy(baseDEUCreator.address, v2)).to.be.reverted;
     
-    // v2 = await ethers.getContractFactory("Offer2Contract", accounts[1]);
-    // const upgrade = await upgrades.upgradeProxy(offerContract.address, v2);
-    // await expect(await upgrade.name()).to.eq("v2");
+    v2 = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator2", owner);
+    const upgrade = await upgrades.upgradeProxy(baseDEUCreator.address, v2);
+    await expect(await upgrade.updatedFunction()).to.eq("v2");
   })
   
   it("only owner can mint reserved nfts and mints up to reserved limit", async function () {
-    await expect( baseDEU.connect(accounts[1]).mintReserved(TOTAL_RESERVED_SUPPLY)).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect( baseDEU.connect(other).mintReserved(TOTAL_RESERVED_SUPPLY)).to.be.revertedWith("Ownable: caller is not the owner");
   
     await baseDEU.mintReserved(TOTAL_RESERVED_SUPPLY);
   
