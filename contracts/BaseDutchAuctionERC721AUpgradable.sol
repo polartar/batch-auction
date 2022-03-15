@@ -5,14 +5,13 @@ pragma solidity 0.8.12;
 
 import "./ERC721AUpgradeable.sol";
 import "./LinearDutchAuctionUpgradeable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "hardhat/console.sol";
 contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
-    using Strings for uint256;
+    using StringsUpgradeable for uint256;
     using ECDSA for bytes32;
 
     string public prefix;
@@ -93,11 +92,11 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
         return hash.recover(signature);
     }
 
-    function setPrefix(string memory _prefix) public onlyOwner {
+    function setPrefix(string memory _prefix) external onlyOwner {
         prefix = _prefix;
     }
 
-    function setPrefixDiscounted(string memory _prefix) public onlyOwner {
+    function setPrefixDiscounted(string memory _prefix) external onlyOwner {
         prefixDiscounted = _prefix;
     }
 
@@ -143,7 +142,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
         }
     }
 
-    function splitPayments() public payable onlyOwner {
+    function splitPayments() external payable onlyOwner {
         (bool success, ) = payable(_splitter).call{value: address(this).balance}(
         ""
         );
