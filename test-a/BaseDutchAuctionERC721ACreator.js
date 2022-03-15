@@ -68,7 +68,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     baseDEUCreator = await upgrades.deployProxy(baseDEUCreatorFactory, []);
     await baseDEUCreator.deployed();
 
-    baseDEUFactory = await hre.ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable");
+    baseDEUFactory = await hre.ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable");
     iface = new ethers.utils.Interface(BaseDutchAuctionCreatorJson.abi);
  })
 
@@ -270,7 +270,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("This hash's signature is invalid.");
+    ).to.be.revertedWith("Invalid signature");
       
     hash = getHash(owner.address, HASH_PREFIX);
     let signature = await owner.signMessage(hash);
@@ -280,7 +280,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("Not signer of the hash");
+    ).to.be.revertedWith("Invalid signer");
   });
   
   it("cannot replay attack hashes", async function () {
@@ -301,7 +301,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("Not signer of the hash");
+    ).to.be.revertedWith("Invalid signer");
   
     let newHash = getHash(other.address, "Public Sale Verification:");
     let newOwnerSignature = await owner.signMessage(newHash);
@@ -517,7 +517,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
         value: BigNumber.from(PRICE_DISCOUNTED),
         from: other.address,
       })
-    ).to.be.revertedWith("Not signer of the hash");
+    ).to.be.revertedWith("Invalid signer");
   });
   
   it("payment splitter releases nothing in the beginning", async function () {

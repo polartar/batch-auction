@@ -9,8 +9,8 @@ import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "hardhat/console.sol";
-contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
+
+contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
     using StringsUpgradeable for uint256;
     using ECDSA for bytes32;
 
@@ -116,8 +116,8 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
     }
     
     function mintWhitelist(bytes32 hash, bytes memory signature, uint256 numberOfTokens) external payable {
-        require(_verify(hash, signature), "This hash's signature is invalid.");
-        require(_hash(prefix, msg.sender) == hash, "Not signer of the hash");
+        require(_verify(hash, signature), "Invalid signature");
+        require(_hash(prefix, msg.sender) == hash, "Invalid signer");
         require(_whitelistClaimed[msg.sender] + numberOfTokens <= whitelistMaxMint, 'You cannot mint this many.');
 
         _whitelistClaimed[msg.sender] += numberOfTokens;
@@ -161,7 +161,7 @@ contract BaseDutchAuctionERC721AUpgradable is ERC721AUpgradeable, LinearDutchAuc
 
     function mintWhitelistDiscounted(bytes32 hash, bytes memory signature, uint256 numberOfTokens) external payable {
         require(_verify(hash, signature), "Invalid signaure");
-        require(_hash(prefixDiscounted, msg.sender) == hash, "Not signer of the hash");
+        require(_hash(prefixDiscounted, msg.sender) == hash, "Invalid signer");
         require(_whitelistClaimed[msg.sender] + numberOfTokens <= whitelistMaxMint, 'You cannot mint this many.');
         require(discountedPrice == msg.value, "Invalid amount.");
 

@@ -48,7 +48,7 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
   before(async() => {
     accounts = await ethers.getSigners();
     [owner, other, other2, jon, ronald, eric] = accounts;//.map(account => account.address);
-    baseDEUFactory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable");
+    baseDEUFactory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable");
  })
 
   beforeEach(async function () {
@@ -71,10 +71,10 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
   })
 
   it('should only let admin upgrade', async () => {
-    let v2 = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable2", other);
+    let v2 = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable2", other);
     await expect(upgrades.upgradeProxy(baseDEU.address, v2)).to.be.reverted;
     
-    v2 = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradable2", owner);
+    v2 = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable2", owner);
     const upgrade = await upgrades.upgradeProxy(baseDEU.address, v2);
     await expect(await upgrade.updatedFunction()).to.eq("v2");
   })
@@ -245,7 +245,7 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("This hash's signature is invalid.");
+    ).to.be.revertedWith("Invalid signature");
       
     hash = getHash(owner.address, HASH_PREFIX);
     let signature = await owner.signMessage(hash);
@@ -255,7 +255,7 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("Not signer of the hash");
+    ).to.be.revertedWith("Invalid signer");
   });
   
   it("cannot replay attack hashes", async function () {
@@ -276,7 +276,7 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
-    ).to.be.revertedWith("Not signer of the hash");
+    ).to.be.revertedWith("Invalid signer");
   
     let newHash = getHash(other.address, "Public Sale Verification:");
     let newOwnerSignature = await owner.signMessage(newHash);
@@ -492,7 +492,7 @@ describe("Test BaseDutchAuctionERC721AUpgradeable contract", function () {
         value: BigNumber.from(PRICE_DISCOUNTED),
         from: other.address,
       })
-    ).to.be.revertedWith("Not signer of the hash");
+    ).to.be.revertedWith("Invalid signer");
   });
   
   it("payment splitter releases nothing in the beginning", async function () {

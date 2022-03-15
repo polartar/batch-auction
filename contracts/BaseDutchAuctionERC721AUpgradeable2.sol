@@ -3,9 +3,9 @@
 
 pragma solidity 0.8.12;
 
-import "./BaseDutchAuctionERC721AUpgradable.sol";
+import "./BaseDutchAuctionERC721AUpgradeable.sol";
 
-contract BaseDutchAuctionERC721AUpgradable2 is BaseDutchAuctionERC721AUpgradable {
+contract BaseDutchAuctionERC721AUpgradeable2 is BaseDutchAuctionERC721AUpgradeable {
 
     function updatedFunction() public pure returns (string memory){
         return "v2";
