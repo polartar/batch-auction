@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
+contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable {
     using StringsUpgradeable for uint256;
     using ECDSA for bytes32;
 
@@ -43,7 +43,6 @@ contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAu
         uint256 _reservedMax,
         uint256 _discountedPrice
     ) public initializer {
-        __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
         __LinearDutchAuctionUpgradeable_init(
             LinearDutchAuctionUpgradeable.DutchAuctionConfig({
@@ -57,7 +56,6 @@ contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAu
             .5 ether
         );
         __ERC721A_init(name, symbol);
-        transferOwnership(tx.origin);
 
         whitelistMaxMint = _whitelistMaxMint;
         publicListMaxMint = _publicListMaxMint;
@@ -72,9 +70,7 @@ contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAu
         prefix = "Leveling Up Heroes Epic Base Verification:";
         prefixDiscounted = "Leveling Up Heroes Epic Discounted Verification:";
     }
-   
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner{ }
-    
+       
     function release(address payable account) external {
         _splitter.release(account);
     }

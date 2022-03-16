@@ -5,23 +5,27 @@ pragma solidity 0.8.12;
 
 import '@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
+import '@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
-import '@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol';
+import "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
 import './BaseDutchAuctionERC721AUpgradeable.sol';
 
-contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
-    address public beaconAddress;
+contract BaseDutchAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
+    using CountersUpgradeable for CountersUpgradeable.Counter;
 
-    event CreateAuction(address _contract, string _name, string _symbol);
-    /// Initializes factory
-    function initialize() public initializer {
-        __Ownable_init_unchained();
+    CountersUpgradeable.Counter private _auctionIds;
+
+
+    IBeacon public beacon;
+    mapping(uint256 => address) auctions;
+    event CreateAuction(uint256 indexed index, address _contract, string _name, string _symbol);
+
+    function initialize(
+     IBeacon _beacon
+    ) public initializer {
         __UUPSUpgradeable_init();
-
-        // set up beacon with msg.sender as the owner
-        UpgradeableBeacon _beacon = new UpgradeableBeacon(address(new BaseDutchAuctionERC721AUpgradeable()));
-        _beacon.transferOwnership(msg.sender);
-        beaconAddress = address(_beacon);
+       __Ownable_init();  
+       beacon = _beacon;
     }
 
     function createAuction(
@@ -34,9 +38,9 @@ contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
         uint256 _nonReservedMax,
         uint256 _reservedMax,
         uint256 _discountedPrice
-    ) public onlyOwner {
+    ) public {
         BeaconProxy proxy = new BeaconProxy(
-            beaconAddress,
+            address(beacon),
             abi.encodeWithSelector(
                 BaseDutchAuctionERC721AUpgradeable(address(0)).initialize.selector,
                 payees,
@@ -50,9 +54,18 @@ contract BaseDutchAuctionERC721ACreator is UUPSUpgradeable, OwnableUpgradeable {
                 _discountedPrice
             )
         );
+        BaseDutchAuctionERC721AUpgradeable auction = BaseDutchAuctionERC721AUpgradeable(address(proxy));
+        auction.transferOwnership(msg.sender);
 
-        emit CreateAuction(address(proxy), name, symbol);
+        _auctionIds.increment();
+        uint256 newAuctionId = _auctionIds.current();
+        auctions[newAuctionId] = address(proxy);
+        emit CreateAuction(newAuctionId, address(proxy), name, symbol);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
+
+    function getAuction(uint256 id) public view returns(address) {
+        return auctions[id];
+    }
 }

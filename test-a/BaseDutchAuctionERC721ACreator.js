@@ -1,7 +1,7 @@
 const { expect, assert } = require("chai");
 const { ethers, upgrades  } = require("hardhat");
 const parseEther = ethers.utils.parseEther;
-const { BigNumber, Contract } = require("ethers");
+const { BigNumber } = require("ethers");
 
 function getHash(address, data) {
   let messageHash = ethers.utils.solidityKeccak256(
@@ -25,11 +25,13 @@ function getParamFromEvent(transaction, interface, eventName, paramIndex) {
 
 
 describe("Test BaseDutchAuctionERC721ACreator contract", function () {
-  let baseDEUCreatorFactory;
-  let baseDEUFactory;
+  let auctionCreatorFactory;
+  let auctionFactory;
 
-  let baseDEUCreator;
-  let baseDEU;
+
+  let auctionCreator;
+  let auctionBeacon;
+  let auction;
   let accounts;
   let owner, other, other2, jon, ronald, eric;
   
@@ -61,19 +63,23 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   
   const BaseDutchAuctionCreatorJson = require("../artifacts/contracts/BaseDutchAuctionERC721ACreator.sol/BaseDutchAuctionERC721ACreator.json");
   let iface;
+  let index = 0;
   before(async() => {
     accounts = await ethers.getSigners();
-    [owner, other, other2, jon, ronald, eric] = accounts;//.map(account => account.address);
-    baseDEUCreatorFactory = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator");
-    baseDEUCreator = await upgrades.deployProxy(baseDEUCreatorFactory, []);
-    await baseDEUCreator.deployed();
-
-    baseDEUFactory = await hre.ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable");
+    [owner, other, other2, jon, ronald, eric] = accounts;
+    auctionFactory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable");
+    auctionBeacon = await upgrades.deployBeacon(auctionFactory);
+   
+    auctionCreatorFactory = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator");
+    auctionCreator = await upgrades.deployProxy(auctionCreatorFactory, [auctionBeacon.address], {kind : "uups"});
+    await auctionCreator.deployed();
+    
     iface = new ethers.utils.Interface(BaseDutchAuctionCreatorJson.abi);
  })
 
   beforeEach(async function () {
-    const transaction = await baseDEUCreator.createAuction(
+    
+    const transaction = await auctionCreator.createAuction(
       [jon.address, ronald.address, eric.address],
       [75, 15, 10],
       "BaseDutchAuctionTest",
@@ -85,177 +91,190 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
       PRICE_DISCOUNTED,
     )
     
-    const baseDEUAddress = getParamFromEvent(
-      await transaction.wait(),
-      iface,
-      "CreateAuction(address,string,string)",
-      0
-    );
-
-    baseDEU = await baseDEUFactory.attach(baseDEUAddress);
+    // const auctionAddress = getParamFromEvent(
+    //   await transaction.wait(),
+    //   iface,
+    //   "CreateAuction(uint256 indexed,address,string,string)",
+    //   1
+    // );
+    const auctionAddress = await auctionCreator.getAuction(++index)
+    auction = await auctionFactory.attach(auctionAddress);
   })
 
   it('should only let admin upgrade', async () => {
     let v2 = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator2", other);
-    await expect(upgrades.upgradeProxy(baseDEUCreator.address, v2)).to.be.reverted;
+    await expect(upgrades.upgradeProxy(auctionCreator.address, v2)).to.be.reverted;
     
     v2 = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator2", owner);
-    const upgrade = await upgrades.upgradeProxy(baseDEUCreator.address, v2);
+    const upgrade = await upgrades.upgradeProxy(auctionCreator.address, v2);
     await expect(await upgrade.updatedFunction()).to.eq("v2");
   })
   
+  it('should only let admin upgrade beacon', async () => {
+    const v2Factory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable2");
+    const v2 = await v2Factory.deploy();
+    await v2.deployed();
+
+    await expect(auctionBeacon.connect(other).upgradeTo(v2.address)).to.be.reverted;
+
+    await auctionBeacon.upgradeTo(v2.address);
+    auction = await v2Factory.attach(auction.address);
+    await expect(await auction.updatedFunction()).to.eq("v2");
+
+  })
+  
   it("only owner can mint reserved nfts and mints up to reserved limit", async function () {
-    await expect( baseDEU.connect(other).mintReserved(TOTAL_RESERVED_SUPPLY)).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect( auction.connect(other).mintReserved(TOTAL_RESERVED_SUPPLY)).to.be.revertedWith("Ownable: caller is not the owner");
   
-    await baseDEU.mintReserved(TOTAL_RESERVED_SUPPLY);
+    await auction.mintReserved(TOTAL_RESERVED_SUPPLY);
   
-    expect((await baseDEU.totalSupply()).toString()).to.equal("2");
+    expect((await auction.totalSupply()).toString()).to.equal("2");
   });
   
   it("no tokens minted", async function () {
-    expect((await baseDEU.totalSupply()).toString()).to.equal("0");
+    expect((await auction.totalSupply()).toString()).to.equal("0");
   });
   
   it("cannot mint while sale is inactive and can mint while sale is active", async function () {
-    await expect( baseDEU.connect(other).mintPublic(1)).to.be.revertedWith("You cannot mint this many.");
+    await expect( auction.connect(other).mintPublic(1)).to.be.revertedWith("You cannot mint this many.");
   
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from(PRICE),
     });
   
-    await baseDEU.setPublicListMaxMint(0);
+    await auction.setPublicListMaxMint(0);
     
-    await expect( baseDEU.connect(other).mintPublic(1)).to.be.revertedWith("You cannot mint this many.");
+    await expect( auction.connect(other).mintPublic(1)).to.be.revertedWith("You cannot mint this many.");
   });
   
   it("tokenURI is just tokenID without a base URI", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from(PRICE),
     });
   
-    expect(await baseDEU.tokenURI(TOTAL_RESERVED_SUPPLY + 1)).equal(
+    expect(await auction.tokenURI(TOTAL_RESERVED_SUPPLY + 1)).equal(
       `${TOTAL_RESERVED_SUPPLY + 1}`
     );
   });
   
   it("tokenURI is concatenated with a valid base URI which overrides the base URI", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from(PRICE),
     });
   
-    await expect( baseDEU.connect(other).setBaseURI(BASE_URI)).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect( auction.connect(other).setBaseURI(BASE_URI)).to.be.revertedWith("Ownable: caller is not the owner");
   
-    await baseDEU.setBaseURI(BASE_URI);
+    await auction.setBaseURI(BASE_URI);
   
-    expect(await baseDEU.tokenURI(TOTAL_RESERVED_SUPPLY + 1)).equal(
+    expect(await auction.tokenURI(TOTAL_RESERVED_SUPPLY + 1)).equal(
       `${BASE_URI}${TOTAL_RESERVED_SUPPLY + 1}`
     );
   });
   
   it("only owner can enable sale state", async function () {
-    await expect( baseDEU.connect(other).setAuctionStartPoint(secondsSinceEpoch)).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect( auction.connect(other).setAuctionStartPoint(secondsSinceEpoch)).to.be.revertedWith("Ownable: caller is not the owner");
   });
   
   it("cannot mint more than max count", async function () {
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
-    await baseDEU.setPublicListMaxMint(MAX + 1);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(MAX + 1);
   
-    await baseDEU.mintPublic(halfMax, {
+    await auction.mintPublic(halfMax, {
       from: owner.address,
       value: BigNumber.from(PRICE).mul(halfMax),
     });
 
-    await expect( baseDEU.mintPublic(halfMax + 1, 
+    await expect( auction.mintPublic(halfMax + 1, 
       {
       from: owner.address,
       value: BigNumber.from(PRICE).mul(halfMax + 1),
       }
     )).to.be.revertedWith("Sold out.");
     
-    await baseDEU.mintPublic(halfMax, {
+    await auction.mintPublic(halfMax, {
       from: owner.address,
       value: BigNumber.from(PRICE).mul(halfMax),
     });
   });
   
   it("cannot purchase tokens with insufficient ether", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await expect(baseDEU.mintPublic(1)).to.be.revertedWith("Invalid amount.");
+    await expect(auction.mintPublic(1)).to.be.revertedWith("Invalid amount.");
   });
   
   it("can purchase tokens with sufficient ether", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.mintPublic(1, {
+    await auction.mintPublic(1, {
       value: BigNumber.from(PRICE),
     });
   });
   
   it("cannot purchase multiple tokens with insufficient ether", async function () {
     ({ from: owner });
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
     await expect(
-      baseDEU.mintPublic(2, {
+      auction.mintPublic(2, {
         value: BigNumber.from(PRICE),
       })
     ).to.be.revertedWith("Invalid amount.");
   });
   
   it("can purchase multiple tokens with sufficient ether", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.mintPublic(halfPublicListMax, {
+    await auction.mintPublic(halfPublicListMax, {
       value: BigNumber.from(PRICE).mul(halfPublicListMax),
     });
   });
   
   it("cannot mint more than public list max and can increase limit", async function () {
     ({ from: owner });
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.mintPublic(1, {
+    await auction.mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
     });
   
-    await baseDEU.mintPublic(1, {
+    await auction.mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
     });
   
-    await baseDEU.mintPublic(1, {
+    await auction.mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
     });
   
     await expect(
-      baseDEU.mintPublic(1, {
+      auction.mintPublic(1, {
         value: BigNumber.from(PRICE).mul(1),
       })
     ).to.be.revertedWith("You cannot mint this many.");
   
     await expect(
-      baseDEU.connect(other).setPublicListMaxMint(4)
+      auction.connect(other).setPublicListMaxMint(4)
     ).to.be.revertedWith("Ownable: caller is not the owner");
   
-    baseDEU.setPublicListMaxMint(4);
+    auction.setPublicListMaxMint(4);
   
-    await baseDEU.mintPublic(1, {
+    await auction.mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
     });
   });
@@ -263,10 +282,10 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   it("whitelist denies users not on whitelist", async function () {
     let hash = getHash(other2.address, HASH_PREFIX);
     let otherSignature = await other2.signMessage(hash);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
     await expect(
-      baseDEU.connect(other).mintWhitelist(hash, otherSignature, 1, {
+      auction.connect(other).mintWhitelist(hash, otherSignature, 1, {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
@@ -276,7 +295,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     let signature = await owner.signMessage(hash);
     
     await expect(
-      baseDEU.connect(other).mintWhitelist(hash, signature, 1, {
+      auction.connect(other).mintWhitelist(hash, signature, 1, {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
@@ -287,17 +306,17 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     let hash = getHash(other.address, HASH_PREFIX);
     let ownerSignature = await owner.signMessage(hash);
  
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
-    await baseDEU.setPrefix("Public Sale Verification:");
+    await auction.setPrefix("Public Sale Verification:");
   
     await expect(
-      baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+      auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
@@ -306,7 +325,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     let newHash = getHash(other.address, "Public Sale Verification:");
     let newOwnerSignature = await owner.signMessage(newHash);
   
-    await baseDEU.connect(other).mintWhitelist(newHash, newOwnerSignature, 1, {
+    await auction.connect(other).mintWhitelist(newHash, newOwnerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
@@ -315,9 +334,9 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   it("whitelist allows users on whitelist", async function () {
     let hash = getHash(other.address, HASH_PREFIX);
     let ownerSignature = await owner.signMessage(hash);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
@@ -327,25 +346,25 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     let hash = getHash(other.address, HASH_PREFIX);
     let ownerSignature = await owner.signMessage(hash);
     
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
     await expect(
-      baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+      auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
@@ -356,26 +375,26 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   //   const hash = soliditySha3(HASH_PREFIX, other);
   
   //   const ownerSignature = EthCrypto.sign(ownerKey, hash);
-  //   await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT, { from: owner });
-  //   await baseDEU.setAuctionStartPoint(secondsSinceEpoch, { from: owner });
+  //   await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT, { from: owner });
+  //   await auction.setAuctionStartPoint(secondsSinceEpoch, { from: owner });
   
-  //   await baseDEU.mintWhitelist(hash, ownerSignature, 1, {
+  //   await auction.mintWhitelist(hash, ownerSignature, 1, {
   //     value: BigNumber.from(PRICE),
   //     from: other,
   //   });
   
-  //   await baseDEU.mintWhitelist(hash, ownerSignature, 1, {
+  //   await auction.mintWhitelist(hash, ownerSignature, 1, {
   //     value: BigNumber.from(PRICE),
   //     from: other,
   //   });
   
-  //   await baseDEU.mintWhitelist(hash, ownerSignature, 1, {
+  //   await auction.mintWhitelist(hash, ownerSignature, 1, {
   //     value: BigNumber.from(PRICE),
   //     from: other,
   //   });
   
   //   await expectRevert(
-  //     baseDEU.mintWhitelist(hash, ownerSignature, 1, {
+  //     auction.mintWhitelist(hash, ownerSignature, 1, {
   //       value: BigNumber.from(PRICE),
   //       from: other,
   //     }),
@@ -384,23 +403,23 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   
   //   ({ from: owner });
   
-  //   await baseDEU.mintPublic(1, {
+  //   await auction.mintPublic(1, {
   //     from: other,
   //     value: BigNumber.from(PRICE),
   //   });
   
-  //   await baseDEU.mintPublic(1, {
+  //   await auction.mintPublic(1, {
   //     from: other,
   //     value: BigNumber.from(PRICE),
   //   });
   
-  //   await baseDEU.mintPublic(1, {
+  //   await auction.mintPublic(1, {
   //     from: other,
   //     value: BigNumber.from(PRICE),
   //   });
   
   //   await expectRevert(
-  //     baseDEU.mintPublic(1, {
+  //     auction.mintPublic(1, {
   //       from: other,
   //       value: BigNumber.from(PRICE),
   //     }),
@@ -409,8 +428,8 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   // });
   
   it("whitelist cap contributes to public cap", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
     // const hash = soliditySha3(HASH_PREFIX_DISCOUNTED, other);
   
@@ -418,25 +437,25 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     // const ownerSignature = await owner.signMessage(hash);
     let hash = getHash(other.address, HASH_PREFIX_DISCOUNTED);
     let ownerSignature = await owner.signMessage(hash);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE_DISCOUNTED),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE_DISCOUNTED),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE_DISCOUNTED),
       from: other.address,
     });
   
     await expect(
-      baseDEU.connect(other).mintPublic(1, {
+      auction.connect(other).mintPublic(1, {
         from: other.address,
         value: BigNumber.from(PRICE),
       })
@@ -446,37 +465,37 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   it("whitelist max mints can be adjusted", async function () {
     let hash = getHash(other.address, HASH_PREFIX);
     let ownerSignature = await owner.signMessage(hash);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
   
     await expect(
-      baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+      auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
         value: BigNumber.from(PRICE),
         from: other.address,
       })
     ).to.be.revertedWith("You cannot mint this many.");
   
     await expect(
-      baseDEU.connect(other).setWhitelistMaxMint(4)
+      auction.connect(other).setWhitelistMaxMint(4)
     ).to.be.revertedWith("Ownable: caller is not the owner");
   
-    baseDEU.setWhitelistMaxMint(4);
+    auction.setWhitelistMaxMint(4);
   
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
@@ -485,9 +504,9 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   it("whitelist discounted mint allows whitelisted users with proper price", async function () {
     let hash = getHash(other.address, HASH_PREFIX_DISCOUNTED);
     let ownerSignature = await owner.signMessage(hash);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE_DISCOUNTED),
       from: other.address,
     });
@@ -498,22 +517,22 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     let ownerSignature = await owner.signMessage(hash);
     let wrongHash = getHash(other.address, HASH_PREFIX);
     let wrongOwnerSignature = await owner.signMessage(wrongHash);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE_DISCOUNTED),
       from: other.address,
     });
   
     await expect(
-      baseDEU.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
+      auction.connect(other).mintWhitelistDiscounted(hash, ownerSignature, 1, {
         value: BigNumber.from("1"),
         from: other.address,
       })
     ).to.be.revertedWith("Invalid amount.");
   
     await expect(
-      baseDEU.connect(other).mintWhitelistDiscounted(wrongHash, wrongOwnerSignature, 1, {
+      auction.connect(other).mintWhitelistDiscounted(wrongHash, wrongOwnerSignature, 1, {
         value: BigNumber.from(PRICE_DISCOUNTED),
         from: other.address,
       })
@@ -522,107 +541,107 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   
   it("payment splitter releases nothing in the beginning", async function () {
     await expect(
-      baseDEU.release(jon.address)
+      auction.release(jon.address)
     ).to.be.revertedWith("PaymentSplitter: account is not due payment");
     await expect(
-      baseDEU.release(ronald.address)
+      auction.release(ronald.address)
     ).to.be.revertedWith("PaymentSplitter: account is not due payment");
     await expect(
-      baseDEU.release(eric.address)
+      auction.release(eric.address)
     ).to.be.revertedWith("PaymentSplitter: account is not due payment");
   });
   
   it("payment split correctly releases money after one mint and refuses to pay out duplicate calls", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
 
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
       from: other.address,
     });
   
-    await baseDEU.splitPayments();
+    await auction.splitPayments();
   
-    await expect(() => baseDEU.release(jon.address)).to.changeEtherBalance(jon, parseEther("3.75"));
-    await expect(() => baseDEU.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("0.75"));
-    await expect(() => baseDEU.release(eric.address)).to.changeEtherBalance(eric, parseEther("0.5"));
+    await expect(() => auction.release(jon.address)).to.changeEtherBalance(jon, parseEther("3.75"));
+    await expect(() => auction.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("0.75"));
+    await expect(() => auction.release(eric.address)).to.changeEtherBalance(eric, parseEther("0.5"));
 
     await expect(
-      baseDEU.release(jon.address)
+      auction.release(jon.address)
       ).to.be.revertedWith("PaymentSplitter: account is not due payment");
     await expect(
-      baseDEU.release(ronald.address)
+      auction.release(ronald.address)
       ).to.be.revertedWith("PaymentSplitter: account is not due payment");
     await expect(
-      baseDEU.release(eric.address)
+      auction.release(eric.address)
       ).to.be.revertedWith("PaymentSplitter: account is not due payment");
   });
   
   it("payment splitter will not payout accounts that weren't assigned to it", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
       from: other.address,
     });
   
     await expect(
-      baseDEU.release(other.address)
+      auction.release(other.address)
     ).to.be.revertedWith("PaymentSplitter: account has no shares");
   });
   
   it("payment splitter will pay out again after a second mint", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
       from: other.address,
     });
   
-    await baseDEU.splitPayments();
-    await expect(() => baseDEU.release(jon.address)).to.changeEtherBalance(jon, parseEther("3.75"));
-    await expect(() => baseDEU.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("0.75"));
-    await expect(() => baseDEU.release(eric.address)).to.changeEtherBalance(eric, parseEther("0.5"));
+    await auction.splitPayments();
+    await expect(() => auction.release(jon.address)).to.changeEtherBalance(jon, parseEther("3.75"));
+    await expect(() => auction.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("0.75"));
+    await expect(() => auction.release(eric.address)).to.changeEtherBalance(eric, parseEther("0.5"));
 
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
       from: other.address,
     });
   
-    await baseDEU.splitPayments();
-    await expect(() => baseDEU.release(jon.address)).to.changeEtherBalance(jon, parseEther("3.75"));
-    await expect(() => baseDEU.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("0.75"));
-    await expect(() => baseDEU.release(eric.address)).to.changeEtherBalance(eric, parseEther("0.5"));
+    await auction.splitPayments();
+    await expect(() => auction.release(jon.address)).to.changeEtherBalance(jon, parseEther("3.75"));
+    await expect(() => auction.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("0.75"));
+    await expect(() => auction.release(eric.address)).to.changeEtherBalance(eric, parseEther("0.5"));
   });
   
   it("payment splitter will pay out everything after multiple mints", async function () {
-    await baseDEU.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(PUBLIC_LIST_MAX_MINT);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       value: BigNumber.from(PRICE).mul(1),
       from: other.address,
     });
   
-    await baseDEU.connect(other).mintPublic(2, {
+    await auction.connect(other).mintPublic(2, {
       value: BigNumber.from(PRICE).mul(2),
       from: other.address,
     });
   
-    await baseDEU.splitPayments();
-    await expect(() => baseDEU.release(jon.address)).to.changeEtherBalance(jon, parseEther("11.25"));
-    await expect(() => baseDEU.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("2.25"));
-    await expect(() => baseDEU.release(eric.address)).to.changeEtherBalance(eric, parseEther("1.5"));    
+    await auction.splitPayments();
+    await expect(() => auction.release(jon.address)).to.changeEtherBalance(jon, parseEther("11.25"));
+    await expect(() => auction.release(ronald.address)).to.changeEtherBalance(ronald, parseEther("2.25"));
+    await expect(() => auction.release(eric.address)).to.changeEtherBalance(eric, parseEther("1.5"));    
   });
   
   it("dutch auction properly decreases price", async function () {
-    await baseDEU.setAuctionStartPoint(secondsSinceEpoch);
-    await baseDEU.setPublicListMaxMint(MAX + 1);
+    await auction.setAuctionStartPoint(secondsSinceEpoch);
+    await auction.setPublicListMaxMint(MAX + 1);
   
     await expect(
-      baseDEU.connect(other).mintPublic(1, {
+      auction.connect(other).mintPublic(1, {
         from: other.address,
         value: BigNumber.from("4500000000000000000"),
       })
@@ -632,7 +651,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_mine');
   
     await expect(
-      baseDEU.connect(other).mintPublic(1, {
+      auction.connect(other).mintPublic(1, {
         from: other.address,
         value: BigNumber.from("4000000000000000000"),
       })
@@ -644,7 +663,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("3500000000000000000"),
     });
@@ -652,7 +671,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL * 2]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("3000000000000000000"),
     });
@@ -660,7 +679,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL * 2]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("2500000000000000000"),
     });
@@ -668,7 +687,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL * 2]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("2000000000000000000"),
     });
@@ -676,7 +695,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL * 2]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("1500000000000000000"),
     });
@@ -684,7 +703,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL * 2]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("1000000000000000000"),
     });
@@ -692,7 +711,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await ethers.provider.send('evm_increaseTime', [DECREASE_INTERVAL * 2]);
     await ethers.provider.send('evm_mine');
   
-    await baseDEU.connect(other).mintPublic(1, {
+    await auction.connect(other).mintPublic(1, {
       from: other.address,
       value: BigNumber.from("500000000000000000"),
     });
@@ -702,7 +721,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
   
     let hash = getHash(other.address, HASH_PREFIX);
     let ownerSignature = await owner.signMessage(hash);
-    await baseDEU.connect(other).mintWhitelist(hash, ownerSignature, 1, {
+    await auction.connect(other).mintWhitelist(hash, ownerSignature, 1, {
       value: BigNumber.from(PRICE),
       from: other.address,
     });
