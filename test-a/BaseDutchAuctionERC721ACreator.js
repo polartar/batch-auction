@@ -101,7 +101,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     auction = await auctionFactory.attach(auctionAddress);
   })
 
-  it('should only let admin upgrade', async () => {
+  it('should only let admin upgrade the auction creator', async () => {
     let v2 = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator2", other);
     await expect(upgrades.upgradeProxy(auctionCreator.address, v2)).to.be.reverted;
     
@@ -110,7 +110,7 @@ describe("Test BaseDutchAuctionERC721ACreator contract", function () {
     await expect(await upgrade.updatedFunction()).to.eq("v2");
   })
   
-  it('should only let admin upgrade beacon', async () => {
+  it('should only let admin upgrade the auction', async () => {
     const v2Factory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable2");
     const v2 = await v2Factory.deploy();
     await v2.deployed();
