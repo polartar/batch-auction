@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.12;
+pragma solidity 0.8.13;
 
 import "./BaseDutchAuctionERC721ACreator.sol";
 

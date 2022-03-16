@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 
-pragma solidity 0.8.12;
+pragma solidity 0.8.13;
 
 import "./ERC721AUpgradeable.sol";
 import "./LinearDutchAuctionUpgradeable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAuctionUpgradeable, ReentrancyGuardUpgradeable {
     using StringsUpgradeable for uint256;
@@ -69,6 +68,7 @@ contract BaseDutchAuctionERC721AUpgradeable is ERC721AUpgradeable, LinearDutchAu
 
         prefix = "Leveling Up Heroes Epic Base Verification:";
         prefixDiscounted = "Leveling Up Heroes Epic Discounted Verification:";
+        _transferOwnership(tx.origin);
     }
        
     function release(address payable account) external {

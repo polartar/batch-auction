@@ -1,7 +1,7 @@
 // Author: Eric Gao (@itsoksami, https://github.com/Ericxgao)
 // Author: Azuki (ERC721A, https://github.com/chiru-labs/ERC721A)
 
-pragma solidity 0.8.12;
+pragma solidity 0.8.13;
 
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";

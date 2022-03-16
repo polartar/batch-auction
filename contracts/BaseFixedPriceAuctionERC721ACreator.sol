@@ -8,9 +8,9 @@ import '@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol';
 import '@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol';
 import '@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol';
 import "@openzeppelin/contracts/proxy/beacon/IBeacon.sol";
-import './BaseDutchAuctionERC721AUpgradeable.sol';
+import './BaseFixedPriceAuctionERC721AUpgradeable.sol';
 
-contract BaseDutchAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
+contract BaseFixedPriceAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
     using CountersUpgradeable for CountersUpgradeable.Counter;
 
     CountersUpgradeable.Counter private _auctionIds;
@@ -42,7 +42,7 @@ contract BaseDutchAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
         BeaconProxy proxy = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
-                BaseDutchAuctionERC721AUpgradeable(address(0)).initialize.selector,
+                BaseFixedPriceAuctionERC721AUpgradeable(address(0)).initialize.selector,
                 payees,
                 shares,
                 name,
@@ -54,6 +54,8 @@ contract BaseDutchAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
                 _discountedPrice
             )
         );
+        BaseFixedPriceAuctionERC721AUpgradeable auction = BaseFixedPriceAuctionERC721AUpgradeable(address(proxy));
+        auction.transferOwnership(msg.sender);
 
         _auctionIds.increment();
         uint256 newAuctionId = _auctionIds.current();

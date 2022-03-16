@@ -453,7 +453,7 @@
     },
     {
       "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "txHash": "0x75a36b44df30cf2ea4a09de38183ac514ed6055b4c0aa02d4b9fe6e24a4d3343",
+      "txHash": "0x6c812f3d76f0853e12980e21316f196e2e347ff948ff6339c4d774bfe22b497f",
       "kind": "uups"
     }
   ],
@@ -940,9 +940,9 @@
         }
       }
     },
-    "23b3eea41b8467db591c47f2c1a92eee0e84368374bdf27f7eb6c8187faf01e0": {
+    "96d8ec91c524cf7404ca31c9350c8cffa72895f2d6a3ab07ec8dd78e282bc236": {
       "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-      "txHash": "0xedf8282c2bb5954a6df4e9f551b6ab6475328d3748a36645aad7d93ad481bf93",
+      "txHash": "0xb5c47c7b7ecff81a6aebeca6ed7f3f4967289aa6e939d500c182bb9d2cfb3c40",
       "layout": {
         "storage": [
           {
@@ -1013,7 +1013,7 @@
             "label": "_ownerships",
             "offset": 0,
             "slot": "105",
-            "type": "t_mapping(t_uint256,t_struct(TokenOwnership)8420_storage)",
+            "type": "t_mapping(t_uint256,t_struct(TokenOwnership)9036_storage)",
             "contract": "ERC721AUpgradeable",
             "src": "contracts\\ERC721AUpgradeable.sol:89"
           },
@@ -1021,7 +1021,7 @@
             "label": "_addressData",
             "offset": 0,
             "slot": "106",
-            "type": "t_mapping(t_address,t_struct(AddressData)8427_storage)",
+            "type": "t_mapping(t_address,t_struct(AddressData)9043_storage)",
             "contract": "ERC721AUpgradeable",
             "src": "contracts\\ERC721AUpgradeable.sol:92"
           },
@@ -1061,7 +1061,7 @@
             "label": "dutchAuctionConfig",
             "offset": 0,
             "slot": "159",
-            "type": "t_struct(DutchAuctionConfig)11034_storage",
+            "type": "t_struct(DutchAuctionConfig)11650_storage",
             "contract": "LinearDutchAuctionUpgradeable",
             "src": "contracts\\LinearDutchAuctionUpgradeable.sol:62"
           },
@@ -1087,7 +1087,7 @@
             "slot": "214",
             "type": "t_string_storage",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:17"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:16"
           },
           {
             "label": "prefixDiscounted",
@@ -1095,7 +1095,7 @@
             "slot": "215",
             "type": "t_string_storage",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:18"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:17"
           },
           {
             "label": "baseTokenURI",
@@ -1103,7 +1103,7 @@
             "slot": "216",
             "type": "t_string_storage",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:19"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:18"
           },
           {
             "label": "_whitelistClaimed",
@@ -1111,7 +1111,7 @@
             "slot": "217",
             "type": "t_mapping(t_address,t_uint256)",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:21"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:20"
           },
           {
             "label": "_publicListClaimed",
@@ -1119,7 +1119,7 @@
             "slot": "218",
             "type": "t_mapping(t_address,t_uint256)",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:22"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:21"
           },
           {
             "label": "whitelistMaxMint",
@@ -1127,7 +1127,7 @@
             "slot": "219",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:24"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:23"
           },
           {
             "label": "publicListMaxMint",
@@ -1135,7 +1135,7 @@
             "slot": "220",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:25"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:24"
           },
           {
             "label": "nonReservedMax",
@@ -1143,7 +1143,7 @@
             "slot": "221",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:26"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:25"
           },
           {
             "label": "reservedMax",
@@ -1151,7 +1151,7 @@
             "slot": "222",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:27"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:26"
           },
           {
             "label": "max",
@@ -1159,7 +1159,7 @@
             "slot": "223",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:28"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:27"
           },
           {
             "label": "nonReservedMinted",
@@ -1167,7 +1167,7 @@
             "slot": "224",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:29"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:28"
           },
           {
             "label": "reservedMinted",
@@ -1175,7 +1175,7 @@
             "slot": "225",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:30"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:29"
           },
           {
             "label": "discountedPrice",
@@ -1183,7 +1183,7 @@
             "slot": "226",
             "type": "t_uint256",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:31"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:30"
           },
           {
             "label": "_splitter",
@@ -1191,7 +1191,7 @@
             "slot": "227",
             "type": "t_contract(PaymentSplitter)2240",
             "contract": "BaseDutchAuctionERC721AUpgradeable",
-            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:33"
+            "src": "contracts\\BaseDutchAuctionERC721AUpgradeable.sol:32"
           }
         ],
         "types": {
@@ -1210,7 +1210,7 @@
           "t_contract(PaymentSplitter)2240": {
             "label": "contract PaymentSplitter"
           },
-          "t_enum(AuctionIntervalUnit)11038": {
+          "t_enum(AuctionIntervalUnit)11654": {
             "label": "enum LinearDutchAuctionUpgradeable.AuctionIntervalUnit",
             "members": [
               "UNSPECIFIED",
@@ -1224,7 +1224,7 @@
           "t_mapping(t_address,t_mapping(t_address,t_bool))": {
             "label": "mapping(address => mapping(address => bool))"
           },
-          "t_mapping(t_address,t_struct(AddressData)8427_storage)": {
+          "t_mapping(t_address,t_struct(AddressData)9043_storage)": {
             "label": "mapping(address => struct ERC721AUpgradeable.AddressData)"
           },
           "t_mapping(t_address,t_uint256)": {
@@ -1233,13 +1233,13 @@
           "t_mapping(t_uint256,t_address)": {
             "label": "mapping(uint256 => address)"
           },
-          "t_mapping(t_uint256,t_struct(TokenOwnership)8420_storage)": {
+          "t_mapping(t_uint256,t_struct(TokenOwnership)9036_storage)": {
             "label": "mapping(uint256 => struct ERC721AUpgradeable.TokenOwnership)"
           },
           "t_string_storage": {
             "label": "string"
           },
-          "t_struct(AddressData)8427_storage": {
+          "t_struct(AddressData)9043_storage": {
             "label": "struct ERC721AUpgradeable.AddressData",
             "members": [
               {
@@ -1256,7 +1256,7 @@
               }
             ]
           },
-          "t_struct(DutchAuctionConfig)11034_storage": {
+          "t_struct(DutchAuctionConfig)11650_storage": {
             "label": "struct LinearDutchAuctionUpgradeable.DutchAuctionConfig",
             "members": [
               {
@@ -1281,11 +1281,11 @@
               },
               {
                 "label": "unit",
-                "type": "t_enum(AuctionIntervalUnit)11038"
+                "type": "t_enum(AuctionIntervalUnit)11654"
               }
             ]
           },
-          "t_struct(TokenOwnership)8420_storage": {
+          "t_struct(TokenOwnership)9036_storage": {
             "label": "struct ERC721AUpgradeable.TokenOwnership",
             "members": [
               {
@@ -1314,9 +1314,9 @@
         }
       }
     },
-    "273a7b5dd5fa6a74178056985ae41a2b438c43b6874506cd7148d94932b21884": {
+    "e420134c7144ec99a1cc2c6e5e6fe526c867ef698a659ce9dc1743119e39e525": {
       "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0xcf7d3969570afd9abeaa40fbb4fda64b6d8011ffe11bb80ca2dafb57e431c722",
+      "txHash": "0x4a9c7fb2280d8f204f3b7fb6a02c670e6bff797c425de3fa99856ea6b4f562f1",
       "layout": {
         "storage": [
           {
@@ -1434,9 +1434,9 @@
         }
       }
     },
-    "3e6c348d20048f01825f1680c51afc988fd36e02fa896a97a038dfa06d53ec6a": {
+    "ae3059c61a888afbeda76d4e05c1ddc0e01b9529be7b99913c4cfb45918aafe0": {
       "address": "0x8464135c8F25Da09e49BC8782676a84730C318bC",
-      "txHash": "0x4d01b89d478c069d7f65b5725d55deda5011f4709d7b59d7768cd4c98dd395d5",
+      "txHash": "0xd35b923edd81f00d21c9ee595046ac617e505399c569f9d59b45b67bb3f2a485",
       "layout": {
         "storage": [
           {
