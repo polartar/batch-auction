@@ -453,7 +453,7 @@
     },
     {
       "address": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-      "txHash": "0xf3ea55bff04b2c276804a050bec8e35b4cb23904a9e15223d2a63f0f1476d6ec",
+      "txHash": "0x75a36b44df30cf2ea4a09de38183ac514ed6055b4c0aa02d4b9fe6e24a4d3343",
       "kind": "uups"
     }
   ],
@@ -1013,7 +1013,7 @@
             "label": "_ownerships",
             "offset": 0,
             "slot": "105",
-            "type": "t_mapping(t_uint256,t_struct(TokenOwnership)8413_storage)",
+            "type": "t_mapping(t_uint256,t_struct(TokenOwnership)8420_storage)",
             "contract": "ERC721AUpgradeable",
             "src": "contracts\\ERC721AUpgradeable.sol:89"
           },
@@ -1021,7 +1021,7 @@
             "label": "_addressData",
             "offset": 0,
             "slot": "106",
-            "type": "t_mapping(t_address,t_struct(AddressData)8420_storage)",
+            "type": "t_mapping(t_address,t_struct(AddressData)8427_storage)",
             "contract": "ERC721AUpgradeable",
             "src": "contracts\\ERC721AUpgradeable.sol:92"
           },
@@ -1061,7 +1061,7 @@
             "label": "dutchAuctionConfig",
             "offset": 0,
             "slot": "159",
-            "type": "t_struct(DutchAuctionConfig)11027_storage",
+            "type": "t_struct(DutchAuctionConfig)11034_storage",
             "contract": "LinearDutchAuctionUpgradeable",
             "src": "contracts\\LinearDutchAuctionUpgradeable.sol:62"
           },
@@ -1210,7 +1210,7 @@
           "t_contract(PaymentSplitter)2240": {
             "label": "contract PaymentSplitter"
           },
-          "t_enum(AuctionIntervalUnit)11031": {
+          "t_enum(AuctionIntervalUnit)11038": {
             "label": "enum LinearDutchAuctionUpgradeable.AuctionIntervalUnit",
             "members": [
               "UNSPECIFIED",
@@ -1224,7 +1224,7 @@
           "t_mapping(t_address,t_mapping(t_address,t_bool))": {
             "label": "mapping(address => mapping(address => bool))"
           },
-          "t_mapping(t_address,t_struct(AddressData)8420_storage)": {
+          "t_mapping(t_address,t_struct(AddressData)8427_storage)": {
             "label": "mapping(address => struct ERC721AUpgradeable.AddressData)"
           },
           "t_mapping(t_address,t_uint256)": {
@@ -1233,13 +1233,13 @@
           "t_mapping(t_uint256,t_address)": {
             "label": "mapping(uint256 => address)"
           },
-          "t_mapping(t_uint256,t_struct(TokenOwnership)8413_storage)": {
+          "t_mapping(t_uint256,t_struct(TokenOwnership)8420_storage)": {
             "label": "mapping(uint256 => struct ERC721AUpgradeable.TokenOwnership)"
           },
           "t_string_storage": {
             "label": "string"
           },
-          "t_struct(AddressData)8420_storage": {
+          "t_struct(AddressData)8427_storage": {
             "label": "struct ERC721AUpgradeable.AddressData",
             "members": [
               {
@@ -1256,7 +1256,7 @@
               }
             ]
           },
-          "t_struct(DutchAuctionConfig)11027_storage": {
+          "t_struct(DutchAuctionConfig)11034_storage": {
             "label": "struct LinearDutchAuctionUpgradeable.DutchAuctionConfig",
             "members": [
               {
@@ -1281,11 +1281,11 @@
               },
               {
                 "label": "unit",
-                "type": "t_enum(AuctionIntervalUnit)11031"
+                "type": "t_enum(AuctionIntervalUnit)11038"
               }
             ]
           },
-          "t_struct(TokenOwnership)8413_storage": {
+          "t_struct(TokenOwnership)8420_storage": {
             "label": "struct ERC721AUpgradeable.TokenOwnership",
             "members": [
               {
@@ -1314,9 +1314,9 @@
         }
       }
     },
-    "aecdb20e6f91c4b0e5c9501a8433f01a1a4d7333aa777d34a803d265e0813194": {
+    "273a7b5dd5fa6a74178056985ae41a2b438c43b6874506cd7148d94932b21884": {
       "address": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-      "txHash": "0x7c42306ef13b8b5cad09816d43e8488d644577c143b13ceabe498c60ec1a4f3e",
+      "txHash": "0xcf7d3969570afd9abeaa40fbb4fda64b6d8011ffe11bb80ca2dafb57e431c722",
       "layout": {
         "storage": [
           {
@@ -1434,9 +1434,9 @@
         }
       }
     },
-    "fd30041e10315680d4d3afa7803fae5e033bb57cd2193c6a9b80fbeea11fc86f": {
+    "3e6c348d20048f01825f1680c51afc988fd36e02fa896a97a038dfa06d53ec6a": {
       "address": "0x8464135c8F25Da09e49BC8782676a84730C318bC",
-      "txHash": "0xf12fb31380982bd42450384e2801a4d556c2d9552a121267518683fa78b6ed8b",
+      "txHash": "0x4d01b89d478c069d7f65b5725d55deda5011f4709d7b59d7768cd4c98dd395d5",
       "layout": {
         "storage": [
           {

@@ -3,11 +3,18 @@ const hre = require("hardhat");
 async function main() {
   const { upgrades } = hre;
   // We get the contract to deploy
-  const BaseDutchAuctionERC721ACreator = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator");
-  const baseDutchAuctionERC721ACreator = await upgrades.deployProxy(BaseDutchAuctionERC721ACreator, [],{kind: 'uups'});
+  const auctionFactory = await ethers.getContractFactory("BaseDutchAuctionERC721AUpgradeable");
+  const auctionBeacon = await upgrades.deployBeacon(auctionFactory);
 
-  await baseDutchAuctionERC721ACreator.deployed();
-  console.log("baseDutchAuctionERC721ACreator deployed to:", baseDutchAuctionERC721ACreator.address); 
+  console.log("Beacon address", auctionBeacon.address);
+
+  auctionCreatorFactory = await ethers.getContractFactory("BaseDutchAuctionERC721ACreator");
+  auctionCreator = await upgrades.deployProxy(auctionCreatorFactory, [auctionBeacon.address], {kind : "uups"});
+  await auctionCreator.deployed();
+
+  console.log("AuctionCreator address: ", auctionCreator.address);
+
+  //testnet rinkeby: 0x24FD96988a58295d389300f74Cf69FF364b3103E
 }
 
 // We recommend this pattern to be able to use async/await everywhere

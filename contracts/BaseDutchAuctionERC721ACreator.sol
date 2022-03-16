@@ -38,7 +38,7 @@ contract BaseDutchAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
         uint256 _nonReservedMax,
         uint256 _reservedMax,
         uint256 _discountedPrice
-    ) public {
+    ) public returns(address) {
         BeaconProxy proxy = new BeaconProxy(
             address(beacon),
             abi.encodeWithSelector(
@@ -61,6 +61,8 @@ contract BaseDutchAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradeable{
         uint256 newAuctionId = _auctionIds.current();
         auctions[newAuctionId] = address(proxy);
         emit CreateAuction(newAuctionId, address(proxy), name, symbol);
+
+        return address(proxy);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
