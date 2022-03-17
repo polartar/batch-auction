@@ -37,7 +37,7 @@ contract BaseFixedPriceAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradea
         uint256 _publicListMaxMint,
         uint256 _nonReservedMax,
         uint256 _reservedMax,
-        uint256 _discountedPrice
+        uint256 _price
     ) public returns(address) {
         BeaconProxy proxy = new BeaconProxy(
             address(beacon),
@@ -51,11 +51,9 @@ contract BaseFixedPriceAuctionERC721ACreator is OwnableUpgradeable, UUPSUpgradea
                 _publicListMaxMint,
                 _nonReservedMax,
                 _reservedMax,
-                _discountedPrice
+                _price
             )
         );
-        BaseFixedPriceAuctionERC721AUpgradeable auction = BaseFixedPriceAuctionERC721AUpgradeable(address(proxy));
-        auction.transferOwnership(msg.sender);
 
         _auctionIds.increment();
         uint256 newAuctionId = _auctionIds.current();

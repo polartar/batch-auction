@@ -14,8 +14,8 @@ contract BaseFixedPriceAuctionERC721AUpgradeable is ERC721AUpgradeable, Reentran
     using StringsUpgradeable for uint256;
     using ECDSA for bytes32;
 
-    string public prefix = "Base Verification:";
-    string private baseTokenURI = '';
+    string public prefix;
+    string private baseTokenURI;
 
     mapping(address => uint256) public _whitelistClaimed;
     mapping(address => uint256) public _publicListClaimed;
@@ -45,7 +45,7 @@ contract BaseFixedPriceAuctionERC721AUpgradeable is ERC721AUpgradeable, Reentran
         __ReentrancyGuard_init();
         __ERC721A_init(name, symbol);
         _transferOwnership(tx.origin);
-        
+
         whitelistMaxMint = _whitelistMaxMint;
         publicListMaxMint = _publicListMaxMint;
         nonReservedMax = _nonReservedMax;
@@ -55,7 +55,7 @@ contract BaseFixedPriceAuctionERC721AUpgradeable is ERC721AUpgradeable, Reentran
         reservedMinted = 0;
         _splitter = new PaymentSplitter(payees, shares);
         price = _price;
-
+        prefix = "Base Verification:";
     }
 
     function setPrice(uint256 _price) public onlyOwner {
